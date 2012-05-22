@@ -1,4 +1,4 @@
-package GUI;
+package GUI.Customer;
 
 import javax.swing.JPanel;
 
@@ -12,6 +12,8 @@ import javax.swing.JButton;
 import java.awt.BorderLayout;
 import javax.swing.JTable;
 import javax.swing.JLabel;
+import javax.swing.border.LineBorder;
+import java.awt.Color;
 
 public class CustomerPlaceOrderScreen extends JPanel
 {
@@ -47,6 +49,7 @@ public class CustomerPlaceOrderScreen extends JPanel
 		
 		//BorderLayout CENTER
 		JPanel infoPanel = new JPanel();
+		infoPanel.setVisible(true);
 		add(infoPanel, BorderLayout.CENTER);
 		infoPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 		
@@ -58,11 +61,12 @@ public class CustomerPlaceOrderScreen extends JPanel
 		
 		//Store Information Panel
 		JPanel storeInfoPanel = new JPanel();
-		storeInfoPanel.setVisible(false);
+		storeInfoPanel.setBorder(new LineBorder(new Color(0, 0, 0), 1, true));
+		storeInfoPanel.setVisible(true);
 		infoPanel.add(storeInfoPanel);
 		storeInfoPanel.setLayout(new GridLayout(2, 0, 0, 0));
 		
-		JLabel lblStoreName = new JLabel("");
+		JLabel lblStoreName = new JLabel("Store Information");
 		lblStoreName.setHorizontalAlignment(SwingConstants.CENTER);
 		lblStoreName.setEnabled(false);
 		storeInfoPanel.add(lblStoreName);
@@ -70,11 +74,13 @@ public class CustomerPlaceOrderScreen extends JPanel
 		filmListTable = new JTable();
 		filmListTable.setCellSelectionEnabled(true);
 		filmListTable.setEnabled(false);
+		filmListTable.setVisible(true);
 		storeInfoPanel.add(filmListTable);
 		
 		//Film information panel
 		JPanel filmInfoPanel = new JPanel();
-		filmInfoPanel.setVisible(false);
+		filmInfoPanel.setBorder(new LineBorder(new Color(0, 0, 0), 1, true));
+		filmInfoPanel.setVisible(true);
 		infoPanel.add(filmInfoPanel);
 		filmInfoPanel.setLayout(new GridLayout(4, 0, 0, 0));
 		

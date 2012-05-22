@@ -27,7 +27,6 @@ public class LoginScreen extends JPanel
 	{
 		setLayout(new GridLayout(3, 2, 10, 10));
 		setSize(new Dimension(406, 119));
-		setVisible(true);
 		
 		JLabel lblUsername = new JLabel("Username:");
 		lblUsername.setHorizontalAlignment(SwingConstants.RIGHT);
