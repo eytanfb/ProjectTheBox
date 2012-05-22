@@ -12,6 +12,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
+import GUI.Customer.CustomerAccount;
 import GUI.Customer.CustomerPlaceOrderScreen;
 
 import java.awt.event.ActionListener;
@@ -52,6 +53,14 @@ public class MainWindow extends JFrame
 			}
 		});
 		mnScreens.add(mntmCustomerPlaceOrder);
+		
+		JMenuItem mntmCustomerAccountScreen = new JMenuItem("Customer Account Screen");
+		mntmCustomerAccountScreen.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				setContentPaneFromOutside(new CustomerAccount());
+			}
+		});
+		mnScreens.add(mntmCustomerAccountScreen);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		contentPane.setLayout(new BorderLayout(0, 0));

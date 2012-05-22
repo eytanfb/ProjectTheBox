@@ -7,6 +7,8 @@ import GUI.MainWindow;
 
 public class MainDriver
 {
+	
+	public static MainWindow frame;
 	/**
 	 * Launch the application.
 	 */
@@ -18,7 +20,7 @@ public class MainDriver
 			{
 				try
 				{
-					MainWindow frame = new MainWindow();
+					frame = new MainWindow();
 					frame.setVisible(true);
 					frame.setContentPaneFromOutside(new LoginScreen());
 				} catch (Exception e)
