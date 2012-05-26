@@ -1,14 +1,17 @@
 package Driver;
 
 import java.awt.EventQueue;
+import java.beans.Statement;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 import GUI.LoginScreen;
 import GUI.MainWindow;
 
 public class MainDriver
 {
-	
-	public static MainWindow frame;
 	/**
 	 * Launch the application.
 	 */
@@ -20,7 +23,7 @@ public class MainDriver
 			{
 				try
 				{
-					frame = new MainWindow();
+					MainWindow frame = new MainWindow();
 					frame.setVisible(true);
 					frame.setContentPaneFromOutside(new LoginScreen());
 				} catch (Exception e)
@@ -28,8 +31,6 @@ public class MainDriver
 					e.printStackTrace();
 				}
 			}
-		});
-		
-		
+		});	
 	}
 }

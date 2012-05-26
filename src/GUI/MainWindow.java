@@ -12,8 +12,11 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
+import GUI.*;
 import GUI.Customer.CustomerAccount;
 import GUI.Customer.CustomerPlaceOrderScreen;
+import GUI.Owner.OwnerAccount;
+import GUI.Store.Store;
 
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
@@ -49,7 +52,7 @@ public class MainWindow extends JFrame
 		JMenuItem mntmCustomerPlaceOrder = new JMenuItem("Customer Place Order Screen");
 		mntmCustomerPlaceOrder.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				setContentPaneFromOutside(new CustomerPlaceOrderScreen());
+				setContentPaneFromOutside(new CustomerPlaceOrderScreen(MainWindow.this));
 			}
 		});
 		mnScreens.add(mntmCustomerPlaceOrder);
@@ -57,10 +60,26 @@ public class MainWindow extends JFrame
 		JMenuItem mntmCustomerAccountScreen = new JMenuItem("Customer Account Screen");
 		mntmCustomerAccountScreen.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				setContentPaneFromOutside(new CustomerAccount());
+				setContentPaneFromOutside(new CustomerAccount(MainWindow.this));
 			}
 		});
 		mnScreens.add(mntmCustomerAccountScreen);
+		
+		JMenuItem mntmOwnerAccountScreen = new JMenuItem("Owner Account Screen");
+		mntmOwnerAccountScreen.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				setContentPaneFromOutside(new OwnerAccount(MainWindow.this));
+			}
+		});
+		mnScreens.add(mntmOwnerAccountScreen);
+		
+		JMenuItem mntmStoreScreen = new JMenuItem("Store Screen");
+		mntmStoreScreen.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				setContentPaneFromOutside(new Store(MainWindow.this));
+			}
+		});
+		mnScreens.add(mntmStoreScreen);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		contentPane.setLayout(new BorderLayout(0, 0));
