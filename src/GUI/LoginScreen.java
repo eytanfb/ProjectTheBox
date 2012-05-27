@@ -6,13 +6,24 @@ import java.awt.GridLayout;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.JRadioButton;
 import javax.swing.JButton;
 import javax.swing.JPasswordField;
+
+import GUI.Customer.CustomerAccount;
+import GUI.Customer.CustomerPlaceOrderScreen;
+import GUI.Owner.OwnerAccount;
+
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 
 public class LoginScreen extends JPanel
@@ -25,7 +36,7 @@ public class LoginScreen extends JPanel
 	/**
 	 * Create the panel.
 	 */
-	public LoginScreen()
+	public LoginScreen(final MainWindow frame, final Connection conn)
 	{
 		setLayout(new GridLayout(3, 2, 10, 10));
 		setSize(new Dimension(406, 150));
@@ -57,28 +68,38 @@ public class LoginScreen extends JPanel
 		btnSubmit = new JButton("Submit");
 		btnSubmit.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				//TODO: Sql Statement to check username password and grant entry to appropriate place
-				/** 
-				 * Statement stmt = conn.createStatement();
-				 * ResultSet rset = stmt.executeQuery("select usertype from userlist where username ='" 
-				 * + userNameTextField.getText() + "' and password ='" + passwordField.getText() + "'");
-				 * while(rset.next())
-				 * {
-				 * 	 string loginName = rset.getString("type");
-				 * 	if(loginName.equals("0"))
-				 * 		goToCustomerScreen(userNameTextField.getText());
-				 *  else if(loginName == "1")
-				 *  	goToOwnerScreen(userNameTextField.getText());
-				 *  else
-				 *  	System.out.println("FAIL!!");
-				 * }
-				 * 
-				 * */
-				
+				String passwordString = new String(passwordField.getPassword());
+				String loginStatement = "SELECT type FROM userlist WHERE username = '" + userNameTextField.getText() + "' and password = '" + passwordString + "'";
+	
+				try
+				{
+					Statement stmt = conn.createStatement();
+					ResultSet rset = stmt.executeQuery(loginStatement);
+					
+					if(rset.next())
+					{
+						if((rset.getInt("type") == 1))
+						{
+							frame.setContentPaneFromOutside(new OwnerAccount(frame, userNameTextField.getText()));
+						}
+						else if(rset.getInt("type") == 2)
+						{
+							frame.setContentPaneFromOutside(new CustomerPlaceOrderScreen(frame, userNameTextField.getText()));
+						}
+					}
+					else
+					{
+						JOptionPane.showMessageDialog(frame, "Invalid Username/Password");
+						clearTextFields();
+					}
+				} catch (SQLException e1)
+				{
+					// TODO Auto-generated catch block
+					System.out.println(e1.getMessage());
+				}
 			}
 		});
 		add(btnSubmit);
-		
 	}
 
 	private void clearTextFields()

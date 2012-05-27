@@ -2,7 +2,10 @@ package GUI.Customer;
 
 import javax.swing.JPanel;
 import java.awt.GridLayout;
+
+import javax.swing.DefaultListModel;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.JPasswordField;
 import javax.swing.JButton;
@@ -20,9 +23,16 @@ import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.BoxLayout;
 import java.awt.FlowLayout;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Vector;
+
 import javax.swing.JFormattedTextField;
 import javax.swing.border.TitledBorder;
 
+import Driver.MainDriver;
 import GUI.MainWindow;
 import GUI.MyTableModel;
 
@@ -35,13 +45,13 @@ public class CustomerAccount extends JPanel
 	private JTextField addressTextField;
 	private JTextField phoneTextField;
 	private JTable recentOrdersTable;
-	private JTextField textField;
-	private JTextField textField_1;
+	private JTextField firstNameTextField;
+	private JTextField lastNameTextField;
 
 	/**
 	 * Create the panel.
 	 */
-	public CustomerAccount(final MainWindow frame)
+	public CustomerAccount(final MainWindow frame, final String username)
 	{
 		setLayout(new GridLayout(2, 0, 0, 0));
 		setSize(906, 381);
@@ -72,16 +82,16 @@ public class CustomerAccount extends JPanel
 		JLabel lblName = new JLabel("Name:");
 		userNamePanel.add(lblName);
 		
-		textField = new JTextField();
-		userNamePanel.add(textField);
-		textField.setColumns(10);
+		firstNameTextField = new JTextField();
+		userNamePanel.add(firstNameTextField);
+		firstNameTextField.setColumns(10);
 		
 		JLabel lblLastName = new JLabel("Last Name:");
 		userNamePanel.add(lblLastName);
 		
-		textField_1 = new JTextField();
-		userNamePanel.add(textField_1);
-		textField_1.setColumns(10);
+		lastNameTextField = new JTextField();
+		userNamePanel.add(lastNameTextField);
+		lastNameTextField.setColumns(10);
 		
 		JLabel lblAddress = new JLabel("Address:");
 		userNamePanel.add(lblAddress);
@@ -101,12 +111,40 @@ public class CustomerAccount extends JPanel
 		accountInfoPanel.add(buttonPanel, BorderLayout.SOUTH);
 		
 		JButton btnChange = new JButton("Change");
+		btnChange.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				String pwd = new String(passwordField.getPassword());
+				String changeStatement = "UPDATE userlist SET password = '" + pwd + "', name = '" 
+				+ firstNameTextField.getText() + "', surname = '" 
+						+ lastNameTextField.getText() 
+						+ "', address = '" + addressTextField.getText() 
+						+ "', phone = " + phoneTextField.getText() 
+						+ " WHERE username = '" + username + "'";
+				
+				if(passwordField.getPassword().length < 6)
+					JOptionPane.showMessageDialog(frame, "Password has to be at least 6 alphanumeric characters");
+				else
+				{
+				
+					try
+					{
+						Statement stmt = MainDriver.connection.createStatement();
+						stmt.executeQuery(changeStatement);
+					
+					} catch (SQLException e1)
+					{
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+					}
+			}
+		});
 		buttonPanel.add(btnChange);
 		
 		JButton btnBackToOrdering = new JButton("Back to Ordering Screen");
 		btnBackToOrdering.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				frame.setContentPaneFromOutside(new CustomerPlaceOrderScreen(frame));
+				frame.setContentPaneFromOutside(new CustomerPlaceOrderScreen(frame, username));
 			}
 		});
 		buttonPanel.add(btnBackToOrdering);
@@ -123,23 +161,35 @@ public class CustomerAccount extends JPanel
 		lblFavoriteStores.setHorizontalAlignment(SwingConstants.CENTER);
 		favoritesPanel.add(lblFavoriteStores);
 		
-		String[] faves = {"Ortakoy", "Ulus", "Bebek", "Besiktas", "Taksim", "Levent"};
-		JList favoritesList = new JList(faves);
-		favoritesList.setModel(new AbstractListModel() {
-			String[] values = new String[] {"Ortakoy", "Ulus", "Bebek", "Besiktas", "Taksim", "Levent", "Sariyer", "Tarabya", "Maslak", "Zekeriyakoy", "Akatlar", "Kadikoy"};
-			public int getSize() {
-				return values.length;
-			}
-			public Object getElementAt(int index) {
-				return values[index];
-			}
-		});
+		final Vector<String> faves = new Vector<String>();
+		final JList favoritesList = new JList(faves);
+		
+		showFavorites(username, faves, favoritesList);
 		
 		JScrollPane favoritesScrollPane = new JScrollPane(favoritesList);
 		favoritesScrollPane.setEnabled(false);
 		favoritesPanel.add(favoritesScrollPane);
 		
 		JButton btnRemoveFromFavorites = new JButton("Remove from Favorites");
+		btnRemoveFromFavorites.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				String storeName = (String)favoritesList.getSelectedValue();
+				
+				Statement stmt;
+				try
+				{
+					stmt = MainDriver.connection.createStatement();
+					stmt.executeQuery("DELETE FROM favourite WHERE username = '" + username + "' and store = '" + storeName + "'");
+					
+				} catch (SQLException e1)
+				{
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				
+				showFavorites(username, faves, favoritesList);
+			}
+		});
 		favoritesPanel.add(btnRemoveFromFavorites);
 		
 		JPanel recentOrdersPanel = new JPanel();
@@ -150,7 +200,7 @@ public class CustomerAccount extends JPanel
 		recentOrdersPanel.add(lblRecentOrders);
 		
 		String[] recentOrdersTableColumns = {"Order ID", "Store", "Film", "Total Cost"};
-		Object[][] data = {{"12312423", "Ortakoy", "Gladiator", "$5"}};
+		Object[][] data = {};
 		recentOrdersTable = new JTable(new MyTableModel(data, recentOrdersTableColumns));
 		recentOrdersTable.setEnabled(true);
 		recentOrdersTable.setFillsViewportHeight(true);
@@ -168,51 +218,149 @@ public class CustomerAccount extends JPanel
 			days[i] = String.valueOf(i+1);
 		}
 		
-		String[] months = new String[12];
-		for(int i = 0; i < 12; i++)
-		{
-			months[i] = String.valueOf(i+1);
-		}
+		String[] months = {"JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"};
+		
 		
 		String[] years = new String[10];
 		for(int i = 0; i < 10; i++)
 		{
-			years[i] = String.valueOf(i+2010);
+			years[i] = String.valueOf(i+10);
 		}
 		
 		JLabel lblFrom = new JLabel("From:");
 		panel.add(lblFrom);
 		
-		JComboBox fromDayComboBox = new JComboBox(days);
+		final JComboBox fromDayComboBox = new JComboBox(days);
 		fromDayComboBox.setSelectedIndex(0);
 		fromDayComboBox.setMaximumRowCount(31);
 		panel.add(fromDayComboBox);
 		
-		JComboBox fromMonthComboBox = new JComboBox(months);
+		final JComboBox fromMonthComboBox = new JComboBox(months);
 		fromMonthComboBox.setSelectedIndex(0);
 		panel.add(fromMonthComboBox);
 		
-		JComboBox fromYearComboBox = new JComboBox(years);
+		final JComboBox fromYearComboBox = new JComboBox(years);
 		fromYearComboBox.setSelectedIndex(0);
 		panel.add(fromYearComboBox);
 		
 		JLabel lblTo = new JLabel("To:");
 		panel.add(lblTo);
 		
-		JComboBox toDayComboBox = new JComboBox(days);
+		final JComboBox toDayComboBox = new JComboBox(days);
 		toDayComboBox.setSelectedIndex(30);
 		panel.add(toDayComboBox);
 		
-		JComboBox toMonthComboBox = new JComboBox(months);
+		final JComboBox toMonthComboBox = new JComboBox(months);
 		toMonthComboBox.setSelectedIndex(11);
 		panel.add(toMonthComboBox);
 		
-		JComboBox toYearComboBox = new JComboBox(years);
+		final JComboBox toYearComboBox = new JComboBox(years);
 		toYearComboBox.setSelectedIndex(9);
 		panel.add(toYearComboBox);
 		
 		JButton btnShowOrders = new JButton("Show Orders");
+		btnShowOrders.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+
+				String fromDate = fromDayComboBox.getSelectedItem().toString() + "-" + (String)fromMonthComboBox.getSelectedItem() + "-" + fromYearComboBox.getSelectedItem().toString();
+				String toDate = toDayComboBox.getSelectedItem().toString() + "-" + (String)toMonthComboBox.getSelectedItem().toString() + "-" + toYearComboBox.getSelectedItem().toString();
+				
+				showRecentOrders(username, fromDate, toDate);
+			}
+		});
 		panel.add(btnShowOrders);
+		
+		try
+		{
+			Statement stmt = MainDriver.connection.createStatement();
+			ResultSet rset = stmt.executeQuery("select * from userlist where username = '" + username + "'");
+			
+			while(rset.next())
+			{
+				userNameTextField.setText(rset.getString("username"));
+				passwordField.setText(rset.getString("password"));
+				addressTextField.setText(rset.getString("address"));
+				phoneTextField.setText(rset.getString("phone"));
+				firstNameTextField.setText(rset.getString("name"));
+				lastNameTextField.setText(rset.getString("surname"));				
+			}
+			
+		} catch (SQLException e1)
+		{
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
+		String fromDate = fromDayComboBox.getSelectedItem().toString() + "-" + (String)fromMonthComboBox.getSelectedItem() + "-" + fromYearComboBox.getSelectedItem().toString();
+		String toDate = toDayComboBox.getSelectedItem().toString() + "-" + (String)toMonthComboBox.getSelectedItem().toString() + "-" + toYearComboBox.getSelectedItem().toString();
+		showRecentOrders(username, fromDate, toDate);
+	}
+
+	private void showRecentOrders(final String username, String fromDate, String toDate)
+	{
+		String ordersBetweenDates = "SELECT id, store, film, cost FROM orderlist WHERE customer = '" + username + "' and begin between '" + fromDate + "' and '" + toDate + "'";	
+		
+		try
+		{
+			Statement stmt = MainDriver.connection.createStatement();
+			ResultSet rset = stmt.executeQuery(ordersBetweenDates);
+			
+			System.out.println(fromDate);
+			System.out.println(toDate);
+			
+			MyTableModel dataModel = new MyTableModel();
+			ResultSetMetaData mdata = rset.getMetaData();
+		    int colCount = mdata.getColumnCount();
+		    String[] colNames = new String[colCount];
+		    for (int i = 1; i <= colCount; i++) 
+		    {
+		    	colNames[i - 1] = mdata.getColumnName(i);
+		    }
+		    dataModel.setColumnIdentifiers(colNames);
+		 
+		    //now populate the data
+		    while (rset.next()) 
+		    {
+		    	//System.out.println(rset.getString("film"));
+		    	String[] rowData = new String[colCount];
+		        for (int i = 1; i <= colCount; i++) 
+		        {
+		          rowData[i - 1] = rset.getString(i);
+		        }
+		        dataModel.addRow(rowData);
+		        if(dataModel != null)
+		        	recentOrdersTable.setModel(dataModel);
+			
+		    }
+		} catch (SQLException e1)
+		{
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+	}
+
+	private void showFavorites(final String username, Vector<String> faves, JList list)
+	{
+		faves = new Vector<String>();
+		try
+		{
+			Statement stmt = MainDriver.connection.createStatement();
+			ResultSet rset = stmt.executeQuery("select store from favourite where username = '" + username + "'");
+			
+			while(rset.next())
+			{
+				faves.add(rset.getString("store"));
+			}
+			
+		} catch (SQLException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		DefaultListModel model = new DefaultListModel();
+		for(String s: faves)
+			model.addElement(s);
+		list.setModel(model);
 	}
 
 }

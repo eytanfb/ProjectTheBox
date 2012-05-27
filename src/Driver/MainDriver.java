@@ -12,25 +12,44 @@ import GUI.MainWindow;
 
 public class MainDriver
 {
+	
+	public static Connection connection = null;
 	/**
 	 * Launch the application.
+	 * @throws ClassNotFoundException 
 	 */
-	public static void main(String[] args)
+	public static void main(String[] args) throws ClassNotFoundException
 	{
-		EventQueue.invokeLater(new Runnable()
+		Class.forName("oracle.jdbc.driver.OracleDriver");
+		
+		
+		try
 		{
-			public void run()
-			{
-				try
-				{
-					MainWindow frame = new MainWindow();
-					frame.setVisible(true);
-					frame.setContentPaneFromOutside(new LoginScreen());
-				} catch (Exception e)
-				{
-					e.printStackTrace();
-				}
-			}
-		});	
+			connection = DriverManager.getConnection(
+				"jdbc:oracle:thin:@//localhost:1521/XE", "TheBox", "sTevu9Ub");
+		}
+		catch(Exception e)
+		{
+			System.out.println("Connection failed" + "\n" + e.getMessage());
+			System.exit(1);
+		}
+		
+		MainWindow frame = new MainWindow();
+		frame.setVisible(true);
+		frame.setContentPaneFromOutside(new LoginScreen(frame, connection));
+		
+//		EventQueue.invokeLater(new Runnable()
+//		{
+//			public void run()
+//			{
+//				try
+//				{
+//					
+//				} catch (Exception e)
+//				{
+//					e.printStackTrace();
+//				}
+//			}
+//		});	
 	}
 }

@@ -3,13 +3,20 @@ package GUI.Store;
 import javax.swing.JPanel;
 import java.awt.GridLayout;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.JSpinner;
 import javax.swing.JButton;
 import javax.swing.SpinnerNumberModel;
 
+import Driver.MainDriver;
+import GUI.MainWindow;
+import GUI.Owner.OwnerAccount;
+
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 public class NewStoreForm extends JPanel
 {
@@ -23,7 +30,7 @@ public class NewStoreForm extends JPanel
 	/**
 	 * Create the panel.
 	 */
-	public NewStoreForm()
+	public NewStoreForm(final MainWindow frame, final String username)
 	{
 		setLayout(new GridLayout(7, 2, 0, 0));
 		setSize(450, 330);
@@ -81,7 +88,39 @@ public class NewStoreForm extends JPanel
 		add(panel_1);
 		
 		JButton btnCreateStore = new JButton("Create Store");
+		btnCreateStore.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				String insertStore	= "INSERT INTO store (name, owner, address, rental, late, maxrent, hire) VALUES ('" 
+			+ newStoreNameField.getText() + "', '" 
+						+ username + "', '" 
+			+ addressField.getText() + "', " 
+						+ Integer.parseInt(rentalSpinner.getModel().getValue().toString()) + ", " 
+			+ Integer.parseInt(lateFeeSpinner.getModel().getValue().toString()) + ", " 
+						+ Integer.parseInt(maxRentSpinner.getModel().getValue().toString()) + ", " 
+			+ Integer.parseInt(hiringPeriodSpinner.getModel().getValue().toString()) + ")";
+				
+				try
+				{
+					Statement stmt = MainDriver.connection.createStatement();
+					int insert = stmt.executeUpdate(insertStore);
+					if(insert > 0)
+					{
+						JOptionPane.showMessageDialog(null, "New Store Created");
+						frame.setContentPaneFromOutside(new OwnerAccount(frame, username));
+					}
+					else
+						JOptionPane.showMessageDialog(null, "FAIL!");
+				} catch (SQLException e1)
+				{
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				
+			}
+		});
 		panel_1.add(btnCreateStore);
+		
+		
 
 	}
 
